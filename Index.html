@@ -1,382 +1,378 @@
-{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang3082{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
-{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
-\pard\sa200\sl276\slmult1\f0\fs22\lang10 <!DOCTYPE html>\par
-<html lang="es">\par
-<head>\par
-    <meta charset="UTF-8">\par
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">\par
-    <title>Simulaci\'f3n: Estimaci\'f3n de \'c1rea bajo la Curva</title>\par
-    <style>\par
-        :root \{\par
-            --bg-color: #f4f6f9;\par
-            --panel-bg: #ffffff;\par
-            --accent-color: #2563eb;\par
-            --text-color: #1e293b;\par
-            --border-color: #cbd5e1;\par
-        \}\par
-\par
-        body \{\par
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\par
-            background-color: var(--bg-color);\par
-            color: var(--text-color);\par
-            margin: 0;\par
-            padding: 20px;\par
-        \}\par
-\par
-        .container \{\par
-            max-width: 1100px;\par
-            margin: 0 auto;\par
-            display: grid;\par
-            grid-template-columns: 320px 1fr;\par
-            gap: 20px;\par
-        \}\par
-\par
-        .panel \{\par
-            background-color: var(--panel-bg);\par
-            padding: 20px;\par
-            border-radius: 12px;\par
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);\par
-        \}\par
-\par
-        h1, h2 \{\par
-            margin-top: 0;\par
-            font-size: 1.25rem;\par
-            color: #0f172a;\par
-        \}\par
-\par
-        .header-title \{\par
-            grid-column: 1 / -1;\par
-            text-align: center;\par
-            margin-bottom: 10px;\par
-        \}\par
-\par
-        .header-title h1 \{\par
-            font-size: 1.8rem;\par
-            margin-bottom: 5px;\par
-        \}\par
-\par
-        .control-group \{\par
-            margin-bottom: 15px;\par
-        \}\par
-\par
-        label \{\par
-            display: block;\par
-            font-weight: 600;\par
-            margin-bottom: 5px;\par
-            font-size: 0.9rem;\par
-        \}\par
-\par
-        textarea \{\par
-            width: 100%;\par
-            height: 120px;\par
-            padding: 8px;\par
-            border: 1px solid var(--border-color);\par
-            border-radius: 6px;\par
-            font-family: monospace;\par
-            resize: vertical;\par
-            box-sizing: border-box;\par
-        \}\par
-\par
-        select, input[type="range"] \{\par
-            width: 100%;\par
-            padding: 8px;\par
-            border: 1px solid var(--border-color);\par
-            border-radius: 6px;\par
-            box-sizing: border-box;\par
-        \}\par
-\par
-        .range-val \{\par
-            text-align: right;\par
-            font-size: 0.85rem;\par
-            color: #64748b;\par
-        \}\par
-\par
-        .result-box \{\par
-            background-color: #eff6ff;\par
-            border: 1px solid #bfdbfe;\par
-            border-radius: 8px;\par
-            padding: 15px;\par
-            text-align: center;\par
-            margin-top: 20px;\par
-        \}\par
-\par
-        .result-box h3 \{\par
-            margin: 0 0 5px 0;\par
-            font-size: 0.9rem;\par
-            color: #1e40af;\par
-            text-transform: uppercase;\par
-            letter-spacing: 0.5px;\par
-        \}\par
-\par
-        .result-box .value \{\par
-            font-size: 1.8rem;\par
-            font-weight: bold;\par
-            color: var(--accent-color);\par
-        \}\par
-\par
-        canvas \{\par
-            width: 100%;\par
-            height: 500px;\par
-            background-color: #ffffff;\par
-            border-radius: 8px;\par
-            border: 1px solid var(--border-color);\par
-            display: block;\par
-        \}\par
-\par
-        .instructions \{\par
-            font-size: 0.8rem;\par
-            color: #64748b;\par
-            margin-top: 5px;\par
-        \}\par
-    </style>\par
-</head>\par
-<body>\par
-\par
-<div class="header-title">\par
-    <h1>Estimaci\'f3n de \'c1rea bajo la Curva</h1>\par
-    <p style="color: #64748b; margin: 0;">Suma de Riemann a partir de datos experimentales/medidos</p>\par
-</div>\par
-\par
-<div class="container">\par
-    <div class="panel">\par
-        <h2>Configuraci\'f3n</h2>\par
-        \par
-        <div class="control-group">\par
-            <label for="dataInput">Pares de Datos (Tiempo, Variable):</label>\par
-            <textarea id="dataInput" placeholder="t, y">0, 2\par
-1, 5\par
-2, 3\par
-3, 8\par
-4, 4\par
-5, 6</textarea>\par
-            <div class="instructions">Ingresa un par (x, y) por l\'ednea separado por coma. Los valores de x deben ser crecientes.</div>\par
-        </div>\par
-\par
-        <div class="control-group">\par
-            <label for="numRects">N\'famero de Rect\'e1ngulos (N): <span id="rectsVal">10</span></label>\par
-            <input type="range" id="numRects" min="1" max="50" value="10">\par
-        </div>\par
-\par
-        <div class="control-group">\par
-            <label for="method">Evaluaci\'f3n de Altura:</label>\par
-            <select id="method">\par
-                <option value="left">Por la izquierda (Extremo Izq)</option>\par
-                <option value="right">Por la derecha (Extremo Der)</option>\par
-                <option value="mid">En el centro de la base (Punto Medio)</option>\par
-            </select>\par
-        </div>\par
-\par
-        <div class="result-box">\par
-            <h3>\'c1rea Estimada</h3>\par
-            <div class="value" id="areaDisplay">0.00</div>\par
-        </div>\par
-    </div>\par
-\par
-    <div class="panel" style="display: flex; flex-direction: column; justify-content: center;">\par
-        <canvas id="plotCanvas"></canvas>\par
-    </div>\par
-</div>\par
-\par
-<script>\par
-    // Referencias a elementos del DOM\par
-    const dataInput = document.getElementById('dataInput');\par
-    const numRectsInput = document.getElementById('numRects');\par
-    const rectsVal = document.getElementById('rectsVal');\par
-    const methodSelect = document.getElementById('method');\par
-    const areaDisplay = document.getElementById('areaDisplay');\par
-    const canvas = document.getElementById('plotCanvas');\par
-    const ctx = canvas.getContext('2d');\par
-\par
-    // Ajustar resoluci\'f3n del canvas para pantallas HDPI\par
-    function resizeCanvas() \{\par
-        const rect = canvas.getBoundingClientRect();\par
-        canvas.width = rect.width * window.devicePixelRatio;\par
-        canvas.height = rect.height * window.devicePixelRatio;\par
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);\par
-    \}\par
-\par
-    // Parsear datos de texto\par
-    function getPoints() \{\par
-        const text = dataInput.value;\par
-        const lines = text.split('\\n');\par
-        const points = [];\par
-\par
-        for (let line of lines) \{\par
-            const parts = line.split(',');\par
-            if (parts.length === 2) \{\par
-                const x = parseFloat(parts[0].trim());\par
-                const y = parseFloat(parts[1].trim());\par
-                if (!isNaN(x) && !isNaN(y)) \{\par
-                    points.push(\{ x, y \});\par
-                \}\par
-            \}\par
-        \}\par
-        // Ordenar puntos por coordenada X\par
-        return points.sort((a, b) => a.x - b.x);\par
-    \}\par
-\par
-    // Interpolaci\'f3n lineal por tramos para calcular y en cualquier x\par
-    function interpolate(x, points) \{\par
-        if (points.length === 0) return 0;\par
-        if (x <= points[0].x) return points[0].y;\par
-        if (x >= points[points.length - 1].x) return points[points.length - 1].y;\par
-\par
-        for (let i = 0; i < points.length - 1; i++) \{\par
-            if (x >= points[i].x && x <= points[i+1].x) \{\par
-                const t = (x - points[i].x) / (points[i+1].x - points[i].x);\par
-                return points[i].y + t * (points[i+1].y - points[i].y);\par
-            \}\par
-        \}\par
-        return 0;\par
-    \}\par
-\par
-    // Dibujar gr\'e1fico y realizar la simulaci\'f3n\par
-    function draw() \{\par
-        resizeCanvas();\par
-        const width = canvas.getBoundingClientRect().width;\par
-        const height = canvas.getBoundingClientRect().height;\par
-\par
-        ctx.clearRect(0, 0, width, height);\par
-\par
-        const points = getPoints();\par
-        if (points.length < 2) \{\par
-            areaDisplay.innerText = "0.00";\par
-            return;\par
-        \}\par
-\par
-        const N = parseInt(numRectsInput.value);\par
-        rectsVal.innerText = N;\par
-        const method = methodSelect.value;\par
-\par
-        // Determinar l\'edmites de la gr\'e1fica\par
-        const xMin = points[0].x;\par
-        const xMax = points[points.length - 1].x;\par
-        const yMin = Math.min(0, ...points.map(p => p.y));\par
-        const yMax = Math.max(...points.map(p => p.y));\par
-\par
-        // M\'e1rgenes y escalado\par
-        const padding = 50;\par
-        const graphWidth = width - 2 * padding;\par
-        const graphHeight = height - 2 * padding;\par
-\par
-        const rangeX = (xMax - xMin) || 1;\par
-        const rangeY = (yMax - yMin) || 1;\par
-\par
-        function toScreenX(x) \{\par
-            return padding + ((x - xMin) / rangeX) * graphWidth;\par
-        \}\par
-\par
-        function toScreenY(y) \{\par
-            return height - padding - ((y - yMin) / rangeY) * graphHeight;\par
-        \}\par
-\par
-        // 1. Ejes cartesianos\par
-        ctx.strokeStyle = '#94a3b8';\par
-        ctx.lineWidth = 1;\par
-        ctx.beginPath();\par
-        // Eje X\par
-        const zeroY = toScreenY(0);\par
-        ctx.moveTo(padding, zeroY);\par
-        ctx.lineTo(width - padding, zeroY);\par
-        // Eje Y\par
-        ctx.moveTo(padding, padding);\par
-        ctx.lineTo(padding, height - padding);\par
-        ctx.stroke();\par
-\par
-        // Etiquetas de ejes\par
-        ctx.fillStyle = '#64748b';\par
-        ctx.font = '12px sans-serif';\par
-        ctx.fillText(`x: $\{xMin\}`, padding, height - 15);\par
-        ctx.fillText(`x: $\{xMax\}`, width - padding - 30, height - 15);\par
-        ctx.fillText(`y: $\{yMax.toFixed(1)\}`, 5, padding + 10);\par
-        ctx.fillText(`y: 0`, 5, zeroY);\par
-\par
-        // 2. Dibujar rect\'e1ngulos y calcular suma de Riemann\par
-        const dx = (xMax - xMin) / N;\par
-        let totalArea = 0;\par
-\par
-        ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';\par
-        ctx.strokeStyle = 'rgba(29, 78, 216, 0.6)';\par
-        ctx.lineWidth = 1;\par
-\par
-        for (let i = 0; i < N; i++) \{\par
-            const xLeft = xMin + i * dx;\par
-            const xRight = xLeft + dx;\par
-            let xEval;\par
-\par
-            if (method === 'left') \{\par
-                xEval = xLeft;\par
-            \} else if (method === 'right') \{\par
-                xEval = xRight;\par
-            \} else \{ // 'mid'\par
-                xEval = xLeft + dx / 2;\par
-            \}\par
-\par
-            const heightVal = interpolate(xEval, points);\par
-            totalArea += heightVal * dx;\par
-\par
-            // Coordenadas de pantalla para el rect\'e1ngulo\par
-            const rx = toScreenX(xLeft);\par
-            const rw = toScreenX(xRight) - rx;\par
-            const ry = toScreenY(Math.max(0, heightVal));\par
-            const rh = Math.abs(toScreenY(heightVal) - toScreenY(0));\par
-\par
-            // Dibujar rect\'e1ngulo\par
-            ctx.fillRect(rx, ry, rw, rh);\par
-            ctx.strokeRect(rx, ry, rw, rh);\par
-\par
-            // Marcador de altura del rect\'e1ngulo\par
-            ctx.fillStyle = '#ef4444';\par
-            ctx.beginPath();\par
-            ctx.arc(toScreenX(xEval), toScreenY(heightVal), 3, 0, 2 * Math.PI);\par
-            ctx.fill();\par
-            ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';\par
-        \}\par
-\par
-        // 3. Dibujar \'e1rea sombreada bajo la curva (Regi\'f3n real interpolada)\par
-        ctx.beginPath();\par
-        ctx.moveTo(toScreenX(points[0].x), toScreenY(0));\par
-        for (let p of points) \{\par
-            ctx.lineTo(toScreenX(p.x), toScreenY(p.y));\par
-        \}\par
-        ctx.lineTo(toScreenX(points[points.length - 1].x), toScreenY(0));\par
-        ctx.closePath();\par
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';\par
-        ctx.fill();\par
-\par
-        // 4. Dibujar la curva uniendo puntos\par
-        ctx.beginPath();\par
-        ctx.moveTo(toScreenX(points[0].x), toScreenY(points[0].y));\par
-        for (let i = 1; i < points.length; i++) \{\par
-            ctx.lineTo(toScreenX(points[i].x), toScreenY(points[i].y));\par
-        \}\par
-        ctx.strokeStyle = '#059669';\par
-        ctx.lineWidth = 2.5;\par
-        ctx.stroke();\par
-\par
-        // 5. Dibujar puntos de datos medidos\par
-        for (let p of points) \{\par
-            ctx.fillStyle = '#0f172a';\par
-            ctx.beginPath();\par
-            ctx.arc(toScreenX(p.x), toScreenY(p.y), 5, 0, 2 * Math.PI);\par
-            ctx.fill();\par
-        \}\par
-\par
-        // Mostrar resultado final\par
-        areaDisplay.innerText = totalArea.toFixed(4);\par
-    \}\par
-\par
-    // Event Listeners para interacci\'f3n continua\par
-    dataInput.addEventListener('input', draw);\par
-    numRectsInput.addEventListener('input', draw);\par
-    methodSelect.addEventListener('change', draw);\par
-    window.addEventListener('resize', draw);\par
-\par
-    // Dibujado inicial al cargar\par
-    draw();\par
-</script>\par
-\par
-</body>\par
-</html>\par
-}
- 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación: Estimación de Área bajo la Curva</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --panel-bg: #ffffff;
+            --accent-color: #2563eb;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            color: #0f172a;
+        }
+
+        .header-title {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: monospace;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .range-val {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .result-box {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .result-box h3 {
+            margin: 0 0 5px 0;
+            font-size: 0.9rem;
+            color: #1e40af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-box .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        canvas {
+            width: 100%;
+            height: 500px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: block;
+        }
+
+        .instructions {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-title">
+    <h1>Estimación de Área bajo la Curva</h1>
+    <p style="color: #64748b; margin: 0;">Suma de Riemann a partir de datos experimentales/medidos</p>
+</div>
+
+<div class="container">
+    <div class="panel">
+        <h2>Configuración</h2>
+        
+        <div class="control-group">
+            <label for="dataInput">Pares de Datos (Tiempo, Variable):</label>
+            <textarea id="dataInput" placeholder="t, y">0, 2
+1, 5
+2, 3
+3, 8
+4, 4
+5, 6</textarea>
+            <div class="instructions">Ingresa un par (x, y) por línea separado por coma. Los valores de x deben ser crecientes.</div>
+        </div>
+
+        <div class="control-group">
+            <label for="numRects">Número de Rectángulos (N): <span id="rectsVal">10</span></label>
+            <input type="range" id="numRects" min="1" max="50" value="10">
+        </div>
+
+        <div class="control-group">
+            <label for="method">Evaluación de Altura:</label>
+            <select id="method">
+                <option value="left">Por la izquierda (Extremo Izq)</option>
+                <option value="right">Por la derecha (Extremo Der)</option>
+                <option value="mid">En el centro de la base (Punto Medio)</option>
+            </select>
+        </div>
+
+        <div class="result-box">
+            <h3>Área Estimada</h3>
+            <div class="value" id="areaDisplay">0.00</div>
+        </div>
+    </div>
+
+    <div class="panel" style="display: flex; flex-direction: column; justify-content: center;">
+        <canvas id="plotCanvas"></canvas>
+    </div>
+</div>
+
+<script>
+    // Referencias a elementos del DOM
+    const dataInput = document.getElementById('dataInput');
+    const numRectsInput = document.getElementById('numRects');
+    const rectsVal = document.getElementById('rectsVal');
+    const methodSelect = document.getElementById('method');
+    const areaDisplay = document.getElementById('areaDisplay');
+    const canvas = document.getElementById('plotCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Ajustar resolución del canvas para pantallas HDPI
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    // Parsear datos de texto
+    function getPoints() {
+        const text = dataInput.value;
+        const lines = text.split('\n');
+        const points = [];
+
+        for (let line of lines) {
+            const parts = line.split(',');
+            if (parts.length === 2) {
+                const x = parseFloat(parts[0].trim());
+                const y = parseFloat(parts[1].trim());
+                if (!isNaN(x) && !isNaN(y)) {
+                    points.push({ x, y });
+                }
+            }
+        }
+        // Ordenar puntos por coordenada X
+        return points.sort((a, b) => a.x - b.x);
+    }
+
+    // Interpolación lineal por tramos para calcular y en cualquier x
+    function interpolate(x, points) {
+        if (points.length === 0) return 0;
+        if (x <= points[0].x) return points[0].y;
+        if (x >= points[points.length - 1].x) return points[points.length - 1].y;
+
+        for (let i = 0; i < points.length - 1; i++) {
+            if (x >= points[i].x && x <= points[i+1].x) {
+                const t = (x - points[i].x) / (points[i+1].x - points[i].x);
+                return points[i].y + t * (points[i+1].y - points[i].y);
+            }
+        }
+        return 0;
+    }
+
+    // Dibujar gráfico y realizar la simulación
+    function draw() {
+        resizeCanvas();
+        const width = canvas.getBoundingClientRect().width;
+        const height = canvas.getBoundingClientRect().height;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const points = getPoints();
+        if (points.length < 2) {
+            areaDisplay.innerText = "0.00";
+            return;
+        }
+
+        const N = parseInt(numRectsInput.value);
+        rectsVal.innerText = N;
+        const method = methodSelect.value;
+
+        // Determinar límites de la gráfica
+        const xMin = points[0].x;
+        const xMax = points[points.length - 1].x;
+        const yMin = Math.min(0, ...points.map(p => p.y));
+        const yMax = Math.max(...points.map(p => p.y));
+
+        // Márgenes y escalado
+        const padding = 50;
+        const graphWidth = width - 2 * padding;
+        const graphHeight = height - 2 * padding;
+
+        const rangeX = (xMax - xMin) || 1;
+        const rangeY = (yMax - yMin) || 1;
+
+        function toScreenX(x) {
+            return padding + ((x - xMin) / rangeX) * graphWidth;
+        }
+
+        function toScreenY(y) {
+            return height - padding - ((y - yMin) / rangeY) * graphHeight;
+        }
+
+        // 1. Ejes cartesianos
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        // Eje X
+        const zeroY = toScreenY(0);
+        ctx.moveTo(padding, zeroY);
+        ctx.lineTo(width - padding, zeroY);
+        // Eje Y
+        ctx.moveTo(padding, padding);
+        ctx.lineTo(padding, height - padding);
+        ctx.stroke();
+
+        // Etiquetas de ejes
+        ctx.fillStyle = '#64748b';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`x: ${xMin}`, padding, height - 15);
+        ctx.fillText(`x: ${xMax}`, width - padding - 30, height - 15);
+        ctx.fillText(`y: ${yMax.toFixed(1)}`, 5, padding + 10);
+        ctx.fillText(`y: 0`, 5, zeroY);
+
+        // 2. Dibujar rectángulos y calcular suma de Riemann
+        const dx = (xMax - xMin) / N;
+        let totalArea = 0;
+
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+        ctx.strokeStyle = 'rgba(29, 78, 216, 0.6)';
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < N; i++) {
+            const xLeft = xMin + i * dx;
+            const xRight = xLeft + dx;
+            let xEval;
+
+            if (method === 'left') {
+                xEval = xLeft;
+            } else if (method === 'right') {
+                xEval = xRight;
+            } else { // 'mid'
+                xEval = xLeft + dx / 2;
+            }
+
+            const heightVal = interpolate(xEval, points);
+            totalArea += heightVal * dx;
+
+            // Coordenadas de pantalla para el rectángulo
+            const rx = toScreenX(xLeft);
+            const rw = toScreenX(xRight) - rx;
+            const ry = toScreenY(Math.max(0, heightVal));
+            const rh = Math.abs(toScreenY(heightVal) - toScreenY(0));
+
+            // Dibujar rectángulo
+            ctx.fillRect(rx, ry, rw, rh);
+            ctx.strokeRect(rx, ry, rw, rh);
+
+            // Marcador de altura del rectángulo
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.arc(toScreenX(xEval), toScreenY(heightVal), 3, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
+        }
+
+        // 3. Dibujar área sombreada bajo la curva (Región real interpolada)
+        ctx.beginPath();
+        ctx.moveTo(toScreenX(points[0].x), toScreenY(0));
+        for (let p of points) {
+            ctx.lineTo(toScreenX(p.x), toScreenY(p.y));
+        }
+        ctx.lineTo(toScreenX(points[points.length - 1].x), toScreenY(0));
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+        ctx.fill();
+
+        // 4. Dibujar la curva uniendo puntos
+        ctx.beginPath();
+        ctx.moveTo(toScreenX(points[0].x), toScreenY(points[0].y));
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(toScreenX(points[i].x), toScreenY(points[i].y));
+        }
+        ctx.strokeStyle = '#059669';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // 5. Dibujar puntos de datos medidos
+        for (let p of points) {
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(toScreenX(p.x), toScreenY(p.y), 5, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Mostrar resultado final
+        areaDisplay.innerText = totalArea.toFixed(4);
+    }
+
+    // Event Listeners para interacción continua
+    dataInput.addEventListener('input', draw);
+    numRectsInput.addEventListener('input', draw);
+    methodSelect.addEventListener('change', draw);
+    window.addEventListener('resize', draw);
+
+    // Dibujado inicial al cargar
+    draw();
+</script>
+
+</body>
+</html>
