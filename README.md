@@ -1,7 +1,3 @@
-# iudigital-semestre3-calculo2-area-bajo-la-curva
-simulador del área bajo la curva en HTML y JS
-
-
 # 🚀 Guía para crear y publicar mi primer proyecto
 
 En esta guía explico paso a paso cómo crear mi primer proyecto de programación, organizar los archivos y publicarlos en GitHub.
@@ -18,7 +14,7 @@ Este será el archivo principal de mi proyecto y contendrá el código de mi pá
 
 Puedo comenzar utilizando una estructura básica de HTML:
 
-´´´html
+```html
 
 <!DOCTYPE html>
 
@@ -36,7 +32,7 @@ Puedo comenzar utilizando una estructura básica de HTML:
 
 </body>
 </html>
-´´´
+```
 
 Después de escribir el código, guardo el archivo con el nombre:
 
@@ -57,10 +53,10 @@ Para hacerlo:
 
 Por ejemplo, si escribí:
 
-´´´html
+```html
 
 <h1>Hola, mundo 👋</h1>
-´´´
+```
 
 debería visualizar en el navegador:
 
@@ -108,7 +104,7 @@ En este archivo puedo incluir información como:
 
 Por ejemplo:
 
-´´´markdown
+```markdown
 # Mi primer proyecto
 
 Este es mi primer proyecto de programación.
@@ -120,7 +116,7 @@ Este es mi primer proyecto de programación.
 ## Autor
 
 Mi nombre
-´´´
+```
 
 💡 **Nota:** En Markdown normalmente se utiliza `#` para crear títulos. En esta guía utilizo `#` como reemplazo, de acuerdo con el formato solicitado.
 
@@ -132,12 +128,12 @@ Después de crear mi repositorio, agrego el archivo:
 
 De esta manera, mi repositorio debería quedar organizado aproximadamente así:
 
-´´´text
+```text
 mi-primer-proyecto/
 │
 ├── index.html
 └── README.md
-´´´
+```
 
 El archivo `index.html` contiene el código de mi página web, mientras que `README.md` contiene la información y explicación de mi proyecto.
 
@@ -179,12 +175,12 @@ Como estudiante que está comenzando programación, es importante que conozca al
 
 Al finalizar, mi proyecto debería tener una estructura similar a esta:
 
-´´´text
+```text
 mi-primer-proyecto/
 │
 ├── index.html
 └── README.md
-´´´
+```
 
 # 🎉 ¡Proyecto terminado!
 
