@@ -151,7 +151,95 @@ Por ejemplo, puedo escribir como mensaje del commit:
 
 Después confirmo el cambio.
 
-# 7. Conceptos básicos que debo conocer
+7. Publicar mi proyecto con GitHub Pages
+
+Ahora que ya tengo mi archivo index.html dentro del repositorio, puedo utilizar GitHub Pages para publicar mi página web y obtener un enlace que pueda compartir con otras personas.
+
+GitHub Pages permite convertir mi repositorio en un sitio web.
+
+7.1. Ingresar a la configuración del repositorio
+
+Primero ingreso a mi repositorio en GitHub.
+
+Después:
+
+Hago clic en la pestaña Settings.
+En el menú lateral busco la opción Pages.
+Ingreso a la sección Pages.
+7.2. Configurar GitHub Pages
+
+Dentro de GitHub Pages, busco la opción relacionada con la publicación del sitio.
+
+En Build and deployment selecciono:
+
+Source: Deploy from a branch
+
+Luego selecciono:
+
+Branch: main
+
+Y en la carpeta selecciono:
+
+Folder: / (root)
+
+Después hago clic en Save.
+
+7.3. Esperar la publicación
+
+Después de guardar la configuración, GitHub comenzará a publicar mi proyecto.
+
+Este proceso puede tardar algunos segundos o minutos.
+
+Cuando termine, GitHub me mostrará un enlace similar a:
+
+https://miusuario.github.io/mi-primer-proyecto/
+
+Hago clic en el enlace para comprobar que mi página funciona correctamente.
+
+7.4. Comprobar mi página
+
+Al abrir el enlace, debería aparecer el contenido de mi archivo index.html.
+
+Por ejemplo, si mi archivo contiene:
+
+<h1>Hola, mundo 👋</h1>
+<p>Este es mi primer proyecto publicado.</p>
+
+En el navegador debería visualizar:
+
+Hola, mundo 👋
+
+Este enlace puedo compartirlo con mi profesor, compañeros o cualquier persona que necesite revisar mi proyecto.
+
+💡 Importante: para que GitHub Pages encuentre automáticamente la página principal, mi archivo debe llamarse exactamente:
+
+index.html
+
+y debe estar ubicado en la carpeta que seleccioné para la publicación.
+
+8. Conceptos básicos que debo conocer
+
+Como estudiante que está comenzando programación, es importante que conozca algunos conceptos básicos:
+
+HTML: es un lenguaje utilizado para crear la estructura de las páginas web.
+
+Archivo: es un documento donde guardo información o código de mi proyecto.
+
+Repositorio: es un espacio donde almaceno y organizo los archivos de un proyecto.
+
+Git: es una herramienta que me permite controlar y registrar los cambios que realizo en mis proyectos.
+
+GitHub: es una plataforma donde puedo almacenar y compartir repositorios utilizando Git.
+
+Commit: es un registro de los cambios que realicé en mi proyecto.
+
+Push: es el proceso mediante el cual envío mis cambios desde mi computador hacia un repositorio en GitHub.
+
+README.md: es un archivo que utilizo para explicar mi proyecto.
+
+GitHub Pages: es una herramienta de GitHub que me permite publicar mi proyecto como una página web.
+
+# 9. Conceptos básicos que debo conocer
 
 Como estudiante que está comenzando programación, es importante que conozca algunos conceptos básicos:
 
