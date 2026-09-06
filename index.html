@@ -1,378 +1,148 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulación: Estimación de Área bajo la Curva</title>
-    <style>
-        :root {
-            --bg-color: #f4f6f9;
-            --panel-bg: #ffffff;
-            --accent-color: #2563eb;
-            --text-color: #1e293b;
-            --border-color: #cbd5e1;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 20px;
-        }
-
-        .panel {
-            background-color: var(--panel-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        h1, h2 {
-            margin-top: 0;
-            font-size: 1.25rem;
-            color: #0f172a;
-        }
-
-        .header-title {
-            grid-column: 1 / -1;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .header-title h1 {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
-
-        .control-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: monospace;
-            resize: vertical;
-            box-sizing: border-box;
-        }
-
-        select, input[type="range"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-
-        .range-val {
-            text-align: right;
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-
-        .result-box {
-            background-color: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .result-box h3 {
-            margin: 0 0 5px 0;
-            font-size: 0.9rem;
-            color: #1e40af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .result-box .value {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--accent-color);
-        }
-
-        canvas {
-            width: 100%;
-            height: 500px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            display: block;
-        }
-
-        .instructions {
-            font-size: 0.8rem;
-            color: #64748b;
-            margin-top: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GrÃ¡fico de Carga de BaterÃ­a</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    canvas {
+      background-color: #fff;
+      border-radius: 8px;
+    }
+  </style>
 </head>
 <body>
 
-<div class="header-title">
-    <h1>Estimación de Área bajo la Curva</h1>
-    <p style="color: #64748b; margin: 0;">Suma de Riemann a partir de datos experimentales/medidos</p>
-</div>
+  <div class="card">
+    <h2>Nivel de BaterÃ­a (10:00 AM - 12:00 PM)</h2>
+    <canvas id="batteryChart" width="650" height="400"></canvas>
+  </div>
 
-<div class="container">
-    <div class="panel">
-        <h2>Configuración</h2>
-        
-        <div class="control-group">
-            <label for="dataInput">Pares de Datos (Tiempo, Variable):</label>
-            <textarea id="dataInput" placeholder="t, y">0, 2
-1, 5
-2, 3
-3, 8
-4, 4
-5, 6</textarea>
-            <div class="instructions">Ingresa un par (x, y) por línea separado por coma. Los valores de x deben ser crecientes.</div>
-        </div>
-
-        <div class="control-group">
-            <label for="numRects">Número de Rectángulos (N): <span id="rectsVal">10</span></label>
-            <input type="range" id="numRects" min="1" max="50" value="10">
-        </div>
-
-        <div class="control-group">
-            <label for="method">Evaluación de Altura:</label>
-            <select id="method">
-                <option value="left">Por la izquierda (Extremo Izq)</option>
-                <option value="right">Por la derecha (Extremo Der)</option>
-                <option value="mid">En el centro de la base (Punto Medio)</option>
-            </select>
-        </div>
-
-        <div class="result-box">
-            <h3>Área Estimada</h3>
-            <div class="value" id="areaDisplay">0.00</div>
-        </div>
-    </div>
-
-    <div class="panel" style="display: flex; flex-direction: column; justify-content: center;">
-        <canvas id="plotCanvas"></canvas>
-    </div>
-</div>
-
-<script>
-    // Referencias a elementos del DOM
-    const dataInput = document.getElementById('dataInput');
-    const numRectsInput = document.getElementById('numRects');
-    const rectsVal = document.getElementById('rectsVal');
-    const methodSelect = document.getElementById('method');
-    const areaDisplay = document.getElementById('areaDisplay');
-    const canvas = document.getElementById('plotCanvas');
+  <script>
+    const canvas = document.getElementById('batteryChart');
     const ctx = canvas.getContext('2d');
 
-    // Ajustar resolución del canvas para pantallas HDPI
-    function resizeCanvas() {
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * window.devicePixelRatio;
-        canvas.height = rect.height * window.devicePixelRatio;
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    // Datos: Hora y porcentaje de carga (0 a 100)
+    const data = [
+      { time: '10:00 AM', percentage: 20 },
+      { time: '10:30 AM', percentage: 45 },
+      { time: '11:00 AM', percentage: 70 },
+      { time: '11:30 AM', percentage: 88 },
+      { time: '12:00 PM', percentage: 100 }
+    ];
+
+    // MÃ¡rgenes y dimensiones del grÃ¡fico
+    const padding = 60;
+    const chartWidth = canvas.width - padding * 2;
+    const chartHeight = canvas.height - padding * 2;
+
+    // Dibujar Ejes
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#333';
+
+    // Eje Y
+    ctx.moveTo(padding, padding);
+    ctx.lineTo(padding, canvas.height - padding);
+
+    // Eje X
+    ctx.lineTo(canvas.width - padding, canvas.height - padding);
+    ctx.stroke();
+
+    // Dibujar Marcas y Etiquetas del Eje Y (Porcentaje de 0% a 100%)
+    ctx.fillStyle = '#555';
+    ctx.font = '12px Arial';
+    ctx.textAlign = 'right';
+
+    for (let i = 0; i <= 100; i += 20) {
+      const y = canvas.height - padding - (i / 100) * chartHeight;
+      ctx.fillText(i + '%', padding - 10, y + 4);
+      
+      // LÃ­neas de guÃ­a horizontales
+      ctx.beginPath();
+      ctx.strokeStyle = '#e0e0e0';
+      ctx.lineWidth = 1;
+      ctx.moveTo(padding, y);
+      ctx.lineTo(canvas.width - padding, y);
+      ctx.stroke();
     }
 
-    // Parsear datos de texto
-    function getPoints() {
-        const text = dataInput.value;
-        const lines = text.split('\n');
-        const points = [];
+    // TÃ­tulo Eje Y
+    ctx.save();
+    ctx.translate(20, canvas.height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 13px Arial';
+    ctx.fillStyle = '#333';
+    ctx.fillText('Porcentaje de Carga (%)', 0, 0);
+    ctx.restore();
 
-        for (let line of lines) {
-            const parts = line.split(',');
-            if (parts.length === 2) {
-                const x = parseFloat(parts[0].trim());
-                const y = parseFloat(parts[1].trim());
-                if (!isNaN(x) && !isNaN(y)) {
-                    points.push({ x, y });
-                }
-            }
-        }
-        // Ordenar puntos por coordenada X
-        return points.sort((a, b) => a.x - b.x);
-    }
+    // TÃ­tulo Eje X
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 13px Arial';
+    ctx.fillStyle = '#333';
+    ctx.fillText('Tiempo (Horas)', canvas.width / 2, canvas.height - 15);
 
-    // Interpolación lineal por tramos para calcular y en cualquier x
-    function interpolate(x, points) {
-        if (points.length === 0) return 0;
-        if (x <= points[0].x) return points[0].y;
-        if (x >= points[points.length - 1].x) return points[points.length - 1].y;
+    // Dibujar Barras / RectÃ¡ngulos y Etiquetas del Eje X
+    const barWidth = 45;
+    const totalBars = data.length;
+    const stepX = chartWidth / totalBars;
 
-        for (let i = 0; i < points.length - 1; i++) {
-            if (x >= points[i].x && x <= points[i+1].x) {
-                const t = (x - points[i].x) / (points[i+1].x - points[i].x);
-                return points[i].y + t * (points[i+1].y - points[i].y);
-            }
-        }
-        return 0;
-    }
+    data.forEach((item, index) => {
+      const x = padding + (index * stepX) + (stepX / 2) - (barWidth / 2);
+      const barHeight = (item.percentage / 100) * chartHeight;
+      const y = canvas.height - padding - barHeight;
 
-    // Dibujar gráfico y realizar la simulación
-    function draw() {
-        resizeCanvas();
-        const width = canvas.getBoundingClientRect().width;
-        const height = canvas.getBoundingClientRect().height;
+      // Color dinÃ¡mico segÃºn el porcentaje
+      let barColor = '#f44336'; // Rojo si es bajo (< 30%)
+      if (item.percentage >= 30 && item.percentage < 70) {
+        barColor = '#ff9800'; // Naranja (medio)
+      } else if (item.percentage >= 70) {
+        barColor = '#4caf50'; // Verde (alto)
+      }
 
-        ctx.clearRect(0, 0, width, height);
+      // Dibujar RectÃ¡ngulo con color
+      ctx.fillStyle = barColor;
+      ctx.fillRect(x, y, barWidth, barHeight);
 
-        const points = getPoints();
-        if (points.length < 2) {
-            areaDisplay.innerText = "0.00";
-            return;
-        }
+      // Borde del rectÃ¡ngulo
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, barWidth, barHeight);
 
-        const N = parseInt(numRectsInput.value);
-        rectsVal.innerText = N;
-        const method = methodSelect.value;
+      // Texto de Porcentaje sobre la barra
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(item.percentage + '%', x + barWidth / 2, y - 8);
 
-        // Determinar límites de la gráfica
-        const xMin = points[0].x;
-        const xMax = points[points.length - 1].x;
-        const yMin = Math.min(0, ...points.map(p => p.y));
-        const yMax = Math.max(...points.map(p => p.y));
-
-        // Márgenes y escalado
-        const padding = 50;
-        const graphWidth = width - 2 * padding;
-        const graphHeight = height - 2 * padding;
-
-        const rangeX = (xMax - xMin) || 1;
-        const rangeY = (yMax - yMin) || 1;
-
-        function toScreenX(x) {
-            return padding + ((x - xMin) / rangeX) * graphWidth;
-        }
-
-        function toScreenY(y) {
-            return height - padding - ((y - yMin) / rangeY) * graphHeight;
-        }
-
-        // 1. Ejes cartesianos
-        ctx.strokeStyle = '#94a3b8';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        // Eje X
-        const zeroY = toScreenY(0);
-        ctx.moveTo(padding, zeroY);
-        ctx.lineTo(width - padding, zeroY);
-        // Eje Y
-        ctx.moveTo(padding, padding);
-        ctx.lineTo(padding, height - padding);
-        ctx.stroke();
-
-        // Etiquetas de ejes
-        ctx.fillStyle = '#64748b';
-        ctx.font = '12px sans-serif';
-        ctx.fillText(`x: ${xMin}`, padding, height - 15);
-        ctx.fillText(`x: ${xMax}`, width - padding - 30, height - 15);
-        ctx.fillText(`y: ${yMax.toFixed(1)}`, 5, padding + 10);
-        ctx.fillText(`y: 0`, 5, zeroY);
-
-        // 2. Dibujar rectángulos y calcular suma de Riemann
-        const dx = (xMax - xMin) / N;
-        let totalArea = 0;
-
-        ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
-        ctx.strokeStyle = 'rgba(29, 78, 216, 0.6)';
-        ctx.lineWidth = 1;
-
-        for (let i = 0; i < N; i++) {
-            const xLeft = xMin + i * dx;
-            const xRight = xLeft + dx;
-            let xEval;
-
-            if (method === 'left') {
-                xEval = xLeft;
-            } else if (method === 'right') {
-                xEval = xRight;
-            } else { // 'mid'
-                xEval = xLeft + dx / 2;
-            }
-
-            const heightVal = interpolate(xEval, points);
-            totalArea += heightVal * dx;
-
-            // Coordenadas de pantalla para el rectángulo
-            const rx = toScreenX(xLeft);
-            const rw = toScreenX(xRight) - rx;
-            const ry = toScreenY(Math.max(0, heightVal));
-            const rh = Math.abs(toScreenY(heightVal) - toScreenY(0));
-
-            // Dibujar rectángulo
-            ctx.fillRect(rx, ry, rw, rh);
-            ctx.strokeRect(rx, ry, rw, rh);
-
-            // Marcador de altura del rectángulo
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(toScreenX(xEval), toScreenY(heightVal), 3, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.fillStyle = 'rgba(59, 130, 246, 0.3)';
-        }
-
-        // 3. Dibujar área sombreada bajo la curva (Región real interpolada)
-        ctx.beginPath();
-        ctx.moveTo(toScreenX(points[0].x), toScreenY(0));
-        for (let p of points) {
-            ctx.lineTo(toScreenX(p.x), toScreenY(p.y));
-        }
-        ctx.lineTo(toScreenX(points[points.length - 1].x), toScreenY(0));
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
-        ctx.fill();
-
-        // 4. Dibujar la curva uniendo puntos
-        ctx.beginPath();
-        ctx.moveTo(toScreenX(points[0].x), toScreenY(points[0].y));
-        for (let i = 1; i < points.length; i++) {
-            ctx.lineTo(toScreenX(points[i].x), toScreenY(points[i].y));
-        }
-        ctx.strokeStyle = '#059669';
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        // 5. Dibujar puntos de datos medidos
-        for (let p of points) {
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath();
-            ctx.arc(toScreenX(p.x), toScreenY(p.y), 5, 0, 2 * Math.PI);
-            ctx.fill();
-        }
-
-        // Mostrar resultado final
-        areaDisplay.innerText = totalArea.toFixed(4);
-    }
-
-    // Event Listeners para interacción continua
-    dataInput.addEventListener('input', draw);
-    numRectsInput.addEventListener('input', draw);
-    methodSelect.addEventListener('change', draw);
-    window.addEventListener('resize', draw);
-
-    // Dibujado inicial al cargar
-    draw();
-</script>
+      // Etiquetas Eje X (Horas)
+      ctx.fillStyle = '#555';
+      ctx.font = '12px Arial';
+      ctx.fillText(item.time, x + barWidth / 2, canvas.height - padding + 20);
+    });
+  </script>
 
 </body>
 </html>
