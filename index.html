@@ -1,40 +1,420 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulador Carga Celular - Área Bajo la Curva</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
- body{font-family: Arial; background:#f8f9fc; padding:20px}
- .card{background:white; padding:20px; border-radius:12px; max-width:900px; margin:auto; box-shadow:0 4px 10px #0001}
- .azul{color:#2563eb; font-weight:bold} .verde{color:#16a34a; font-weight:bold}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulación: Área Bajo la Curva (Sumas de Riemann)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --accent: #38bdf8;
+      --border: #334155;
+    }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+    .control-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 5px;
+    }
+    input[type="range"], select {
+      width: 100%;
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .table-container {
+      max-height: 260px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 4px;
+      text-align: center;
+    }
+    th {
+      background-color: #0f172a;
+      position: sticky;
+      top: 0;
+    }
+    td input {
+      width: 90%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      text-align: center;
+    }
+    .btn {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 5px;
+    }
+    .btn-update {
+      background: #22c55e;
+      color: #0f172a;
+      margin-top: 10px;
+      margin-bottom: 15px;
+    }
+    .btn-update:hover {
+      background: #16a34a;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .metric-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+    }
+    .metric-box span {
+      display: block;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+    .metric-box strong {
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+    .chart-container {
+      position: relative;
+      height: 480px;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-<div class="card">
-<h2>CARGA DEL CELULAR - Área bajo la curva</h2>
-<p>14h totales / 2 rectángulos = <b>7h de base</b> c/u</p>
-<canvas id="grafica"></canvas>
-<h3>Cálculo:</h3>
-<p><span class="azul">Rectángulo Azul:</span> A = b x h = 7 x 100 = 700 %·h</p>
-<p><span class="verde">Rectángulo Verde:</span> A = b x h = 7 x 65 = 455 %·h</p>
-<p><b>Área Total: 700 + 455 = 1155 %·h = 11.5 horas equivalentes al 100%</b></p>
-</div>
-<script>
-const ctx = document.getElementById('grafica');
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['10AM','12M','2PM','4PM','6PM','8PM','10PM','12AM'],
-    datasets: [
-      { label: '% Carga', data: [100,87,85,82,70,65,50,39], borderColor:'black', tension:0.2, pointRadius:5 },
-      { label: 'Rect Azul 100%', data: [100,100,100,100,null,null,null,null], backgroundColor:'rgba(37,99,235,0.4)', fill:true, stepped:true },
-      { label: 'Rect Verde 65%', data: [null,null,null,null,65,65,65,65], backgroundColor:'rgba(22,163,74,0.4)', fill:true, stepped:true }
-    ]
-  },
-  options:{ scales:{ y:{ min:0, max:100, title:{display:true, text:'% Carga'}}}}
-});
-</script>
+
+  <div class="container">
+    <!-- Panel de Controles y Tabla -->
+    <div class="card">
+      <h2>Datos Medidos</h2>
+      <div class="table-container">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Tiempo (t)</th>
+              <th>Variable (y)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><input type="number" value="10" step="any"></td><td><input type="number" value="10" step="any"></td></tr>
+            <tr><td><input type="number" value="12" step="any"></td><td><input type="number" value="20" step="any"></td></tr>
+            <tr><td><input type="number" value="14" step="any"></td><td><input type="number" value="30" step="any"></td></tr>
+            <tr><td><input type="number" value="16" step="any"></td><td><input type="number" value="40" step="any"></td></tr>
+            <tr><td><input type="number" value="18" step="any"></td><td><input type="number" value="50" step="any"></td></tr>
+            <tr><td><input type="number" value="20" step="any"></td><td><input type="number" value="60" step="any"></td></tr>
+            <tr><td><input type="number" value="22" step="any"></td><td><input type="number" value="70" step="any"></td></tr>
+            <tr><td><input type="number" value="24" step="any"></td><td><input type="number" value="80" step="any"></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn" onclick="addRow()">+ Agregar Fila</button>
+      <button class="btn btn-update" onclick="updateSimulation()">🔄 Actualizar Datos</button>
+
+      <h2>Parámetros</h2>
+      <div class="control-group">
+        <label for="rectCount">Número de rectángulos (N): <span id="nVal">10</span></label>
+        <input type="range" id="rectCount" min="1" max="100" value="10">
+      </div>
+
+      <div class="control-group">
+        <label for="criterion">Criterio de Altura:</label>
+        <select id="criterion">
+          <option value="left">Extremo Izquierdo</option>
+          <option value="right">Extremo Derecho</option>
+          <option value="mid">Punto Medio</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Panel Gráfico y Resultados -->
+    <div class="card">
+      <!-- Muestra únicamente los 3 resultados solicitados -->
+      <div class="metrics">
+        <div class="metric-box">
+          <span>Área Estimada</span>
+          <strong id="estimatedArea">0.000</strong>
+        </div>
+        <div class="metric-box">
+          <span>Valor Real Integral</span>
+          <strong id="realArea">0.000</strong>
+        </div>
+        <div class="metric-box">
+          <span>Diferencia Absoluta</span>
+          <strong id="absDiff">0.000</strong>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="mainChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let chart;
+
+    // Interpolación Spline Cúbica Monótona (Steffen)
+    function getSplineFunction(xs, ys) {
+      const n = xs.length;
+      if (n < 2) return (x) => ys[0] || 0;
+
+      const dx = [], dy = [], ms = [];
+      for (let i = 0; i < n - 1; i++) {
+        dx.push(xs[i + 1] - xs[i]);
+        dy.push(ys[i + 1] - ys[i]);
+        ms.push(dy[i] / dx[i]);
+      }
+
+      const c1s = [ms[0]];
+      for (let i = 0; i < dx.length - 1; i++) {
+        const m = ms[i], mNext = ms[i + 1];
+        if (m * mNext <= 0) {
+          c1s.push(0);
+        } else {
+          const dx0 = dx[i], dx1 = dx[i + 1];
+          const common = dx0 + dx1;
+          c1s.push((3 * common * m * mNext) / ((common + dx1) * m + (common + dx0) * mNext));
+        }
+      }
+      c1s.push(ms[ms.length - 1]);
+
+      const c2s = [], c3s = [];
+      for (let i = 0; i < c1s.length - 1; i++) {
+        const c1 = c1s[i];
+        const m_i = ms[i];
+        const invDx = 1 / dx[i];
+        const common_ = c1 + c1s[i + 1] - 2 * m_i;
+        c2s.push((m_i - c1 - common_) * invDx);
+        c3s.push(common_ * invDx * invDx);
+      }
+
+      return function(x) {
+        if (x <= xs[0]) return ys[0];
+        if (x >= xs[n - 1]) return ys[n - 1];
+        
+        let low = 0, high = c3s.length - 1;
+        while (low <= high) {
+          const mid = Math.floor(0.5 * (low + high));
+          if (xs[mid + 1] < x) low = mid + 1;
+          else if (xs[mid] > x) high = mid - 1;
+          else {
+            const diff = x - xs[mid];
+            return ys[mid] + diff * (c1s[mid] + diff * (c2s[mid] + diff * c3s[mid]));
+          }
+        }
+        return 0;
+      };
+    }
+
+    function getDataFromTable() {
+      const rows = document.querySelectorAll("#dataTable tbody tr");
+      const points = [];
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        const t = parseFloat(inputs[0].value);
+        const y = parseFloat(inputs[1].value);
+        if (!isNaN(t) && !isNaN(y)) {
+          points.push({ t, y });
+        }
+      });
+      points.sort((a, b) => a.t - b.t);
+      return {
+        t: points.map(p => p.t),
+        y: points.map(p => p.y)
+      };
+    }
+
+    function addRow() {
+      const tbody = document.querySelector("#dataTable tbody");
+      const tr = document.createElement("tr");
+      tr.innerHTML = '<td><input type="number" value="0" step="any"></td><td><input type="number" value="0" step="any"></td>';
+      tbody.appendChild(tr);
+    }
+
+    function calculateExactIntegral(splineFn, minX, maxX) {
+      const steps = 2000;
+      const dx = (maxX - minX) / steps;
+      let area = 0;
+      for (let i = 0; i < steps; i++) {
+        const x1 = minX + i * dx;
+        const x2 = x1 + dx;
+        area += (splineFn(x1) + splineFn(x2)) / 2 * dx;
+      }
+      return area;
+    }
+
+    function updateSimulation() {
+      const { t, y } = getDataFromTable();
+      if (t.length < 2) return;
+
+      const N = parseInt(document.getElementById("rectCount").value);
+      document.getElementById("nVal").innerText = N;
+      const criterion = document.getElementById("criterion").value;
+
+      const minX = t[0];
+      const maxX = t[t.length - 1];
+      const spline = getSplineFunction(t, y);
+
+      // Trazo de la curva suave
+      const curvePoints = [];
+      const samples = 200;
+      const step = (maxX - minX) / samples;
+      for (let i = 0; i <= samples; i++) {
+        const xVal = minX + i * step;
+        curvePoints.push({ x: xVal, y: spline(xVal) });
+      }
+
+      // Cálculo de los N rectángulos de Riemann
+      const rectWidth = (maxX - minX) / N;
+      let estimatedArea = 0;
+      const rectDatasets = [];
+
+      for (let i = 0; i < N; i++) {
+        const xLeft = minX + i * rectWidth;
+        const xRight = xLeft + rectWidth;
+        let xEval;
+
+        if (criterion === "left") xEval = xLeft;
+        else if (criterion === "right") xEval = xRight;
+        else xEval = (xLeft + xRight) / 2;
+
+        const height = spline(xEval);
+        estimatedArea += height * rectWidth;
+
+        // Dibujo de los rectángulos
+        rectDatasets.push({
+          type: 'line',
+          label: `Rect ${i+1}`,
+          data: [
+            { x: xLeft, y: 0 },
+            { x: xLeft, y: height },
+            { x: xRight, y: height },
+            { x: xRight, y: 0 }
+          ],
+          fill: true,
+          backgroundColor: 'rgba(56, 189, 248, 0.25)',
+          borderColor: 'rgba(56, 189, 248, 0.6)',
+          borderWidth: 1,
+          pointRadius: 0,
+          showLine: true
+        });
+      }
+
+      // Cálculo de resultados
+      const realArea = calculateExactIntegral(spline, minX, maxX);
+      const absDiff = Math.abs(estimatedArea - realArea);
+
+      document.getElementById("estimatedArea").innerText = estimatedArea.toFixed(4);
+      document.getElementById("realArea").innerText = realArea.toFixed(4);
+      document.getElementById("absDiff").innerText = absDiff.toFixed(4);
+
+      // Renderizado de gráfico
+      const chartData = {
+        datasets: [
+          {
+            type: 'line',
+            label: 'Curva Suave',
+            data: curvePoints,
+            fill: 'origin',
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            borderColor: '#38bdf8',
+            borderWidth: 2,
+            pointRadius: 0,
+            tension: 0
+          },
+          {
+            type: 'scatter',
+            label: 'Datos Medidos',
+            data: t.map((val, idx) => ({ x: val, y: y[idx] })),
+            backgroundColor: '#f43f5e',
+            pointRadius: 5
+          },
+          ...rectDatasets
+        ]
+      };
+
+      if (chart) {
+        chart.data = chartData;
+        chart.update();
+      } else {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        chart = new Chart(ctx, {
+          data: chartData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Tiempo (t)', color: '#94a3b8' }, grid: { color: '#334155' }, ticks: { color: '#f8fafc' } },
+              y: { title: { display: true, text: 'Variable (y)', color: '#94a3b8' }, grid: { color: '#334155' }, ticks: { color: '#f8fafc' } }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      }
+    }
+
+    // Eventos para controles deslizantes y cambio de criterios
+    document.getElementById("rectCount").addEventListener("input", updateSimulation);
+    document.getElementById("criterion").addEventListener("change", updateSimulation);
+
+    window.onload = updateSimulation;
+  </script>
 </body>
 </html>
