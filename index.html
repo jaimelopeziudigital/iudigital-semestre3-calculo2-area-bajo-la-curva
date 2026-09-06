@@ -59,7 +59,7 @@
       box-sizing: border-box;
     }
     .table-container {
-      max-height: 260px;
+      max-height: 280px;
       overflow-y: auto;
       margin-bottom: 10px;
       border: 1px solid var(--border);
@@ -139,26 +139,24 @@
 <body>
 
   <div class="container">
-    <!-- Panel de Controles y Tabla -->
     <div class="card">
       <h2>Datos Medidos</h2>
       <div class="table-container">
         <table id="dataTable">
           <thead>
             <tr>
-              <th>Tiempo (t)</th>
+              <th>Hora (AM/PM)</th>
               <th>Variable (y)</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td><input type="number" value="10" step="any"></td><td><input type="number" value="10" step="any"></td></tr>
-            <tr><td><input type="number" value="12" step="any"></td><td><input type="number" value="20" step="any"></td></tr>
-            <tr><td><input type="number" value="14" step="any"></td><td><input type="number" value="30" step="any"></td></tr>
-            <tr><td><input type="number" value="16" step="any"></td><td><input type="number" value="40" step="any"></td></tr>
-            <tr><td><input type="number" value="18" step="any"></td><td><input type="number" value="50" step="any"></td></tr>
-            <tr><td><input type="number" value="20" step="any"></td><td><input type="number" value="60" step="any"></td></tr>
-            <tr><td><input type="number" value="22" step="any"></td><td><input type="number" value="70" step="any"></td></tr>
-            <tr><td><input type="number" value="24" step="any"></td><td><input type="number" value="80" step="any"></td></tr>
+            <tr><td><input type="text" value="10:00 AM"></td><td><input type="number" value="100" step="any"></td></tr>
+            <tr><td><input type="text" value="12:00 PM"></td><td><input type="number" value="90" step="any"></td></tr>
+            <tr><td><input type="text" value="02:00 PM"></td><td><input type="number" value="70" step="any"></td></tr>
+            <tr><td><input type="text" value="04:00 PM"></td><td><input type="number" value="50" step="any"></td></tr>
+            <tr><td><input type="text" value="06:00 PM"></td><td><input type="number" value="30" step="any"></td></tr>
+            <tr><td><input type="text" value="08:00 PM"></td><td><input type="number" value="10" step="any"></td></tr>
+            <tr><td><input type="text" value="10:00 PM"></td><td><input type="number" value="0" step="any"></td></tr>
           </tbody>
         </table>
       </div>
@@ -181,9 +179,7 @@
       </div>
     </div>
 
-    <!-- Panel Gráfico y Resultados -->
     <div class="card">
-      <!-- Muestra únicamente los 3 resultados solicitados -->
       <div class="metrics">
         <div class="metric-box">
           <span>Área Estimada</span>
@@ -207,6 +203,42 @@
 
   <script>
     let chart;
+
+    // Convertir texto en formato AM/PM a horas decimales continuas para el motor de cálculo
+    function parseTimeString(timeStr) {
+      if (!timeStr) return NaN;
+      const str = timeStr.trim().toUpperCase();
+      const isPM = str.includes("PM");
+      const isAM = str.includes("AM");
+      
+      let clean = str.replace(/(AM|PM)/g, "").trim();
+      let parts = clean.split(":");
+      let hours = parseFloat(parts[0]);
+      let minutes = parts[1] ? parseFloat(parts[1]) : 0;
+
+      if (isNaN(hours)) return NaN;
+
+      if (isPM && hours < 12) hours += 12;
+      if (isAM && hours === 12) hours = 0;
+
+      return hours + (minutes / 60);
+    }
+
+    // Convertir número continuo de horas al formato visual HH:MM AM/PM
+    function formatHoursToAMPM(val) {
+      let totalMinutes = Math.round(val * 60);
+      let hours = Math.floor(totalMinutes / 60) % 24;
+      let minutes = totalMinutes % 60;
+      let period = hours >= 12 ? "PM" : "AM";
+      
+      let displayHours = hours % 12;
+      if (displayHours === 0) displayHours = 12;
+
+      let hh = displayHours < 10 ? "0" + displayHours : displayHours;
+      let mm = minutes < 10 ? "0" + minutes : minutes;
+
+      return `${hh}:${mm} ${period}`;
+    }
 
     // Interpolación Spline Cúbica Monótona (Steffen)
     function getSplineFunction(xs, ys) {
@@ -264,14 +296,24 @@
     function getDataFromTable() {
       const rows = document.querySelectorAll("#dataTable tbody tr");
       const points = [];
+      let baseHourOffset = 0;
+      let prevHour = -1;
+
       rows.forEach(row => {
         const inputs = row.querySelectorAll("input");
-        const t = parseFloat(inputs[0].value);
+        let tVal = parseTimeString(inputs[0].value);
         const y = parseFloat(inputs[1].value);
-        if (!isNaN(t) && !isNaN(y)) {
-          points.push({ t, y });
+
+        if (!isNaN(tVal) && !isNaN(y)) {
+          // Ajuste si la secuencia sobrepasa la medianoche
+          if (prevHour !== -1 && tVal < prevHour) {
+            baseHourOffset += 24;
+          }
+          prevHour = tVal;
+          points.push({ t: tVal + baseHourOffset, y });
         }
       });
+
       points.sort((a, b) => a.t - b.t);
       return {
         t: points.map(p => p.t),
@@ -282,7 +324,7 @@
     function addRow() {
       const tbody = document.querySelector("#dataTable tbody");
       const tr = document.createElement("tr");
-      tr.innerHTML = '<td><input type="number" value="0" step="any"></td><td><input type="number" value="0" step="any"></td>';
+      tr.innerHTML = '<td><input type="text" value="12:00 AM"></td><td><input type="number" value="0" step="any"></td>';
       tbody.appendChild(tr);
     }
 
@@ -310,7 +352,6 @@
       const maxX = t[t.length - 1];
       const spline = getSplineFunction(t, y);
 
-      // Trazo de la curva suave
       const curvePoints = [];
       const samples = 200;
       const step = (maxX - minX) / samples;
@@ -319,7 +360,6 @@
         curvePoints.push({ x: xVal, y: spline(xVal) });
       }
 
-      // Cálculo de los N rectángulos de Riemann
       const rectWidth = (maxX - minX) / N;
       let estimatedArea = 0;
       const rectDatasets = [];
@@ -336,7 +376,6 @@
         const height = spline(xEval);
         estimatedArea += height * rectWidth;
 
-        // Dibujo de los rectángulos
         rectDatasets.push({
           type: 'line',
           label: `Rect ${i+1}`,
@@ -355,7 +394,6 @@
         });
       }
 
-      // Cálculo de resultados
       const realArea = calculateExactIntegral(spline, minX, maxX);
       const absDiff = Math.abs(estimatedArea - realArea);
 
@@ -363,7 +401,6 @@
       document.getElementById("realArea").innerText = realArea.toFixed(4);
       document.getElementById("absDiff").innerText = absDiff.toFixed(4);
 
-      // Renderizado de gráfico
       const chartData = {
         datasets: [
           {
@@ -399,8 +436,25 @@
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Tiempo (t)', color: '#94a3b8' }, grid: { color: '#334155' }, ticks: { color: '#f8fafc' } },
-              y: { title: { display: true, text: 'Variable (y)', color: '#94a3b8' }, grid: { color: '#334155' }, ticks: { color: '#f8fafc' } }
+              x: { 
+                type: 'linear', 
+                position: 'bottom', 
+                title: { display: true, text: 'Tiempo (Hora)', color: '#94a3b8' }, 
+                grid: { color: '#334155' }, 
+                ticks: { 
+                  color: '#f8fafc',
+                  callback: function(value) {
+                    return formatHoursToAMPM(value);
+                  }
+                } 
+              },
+              y: { 
+                min: 0,
+                max: 100,
+                title: { display: true, text: 'Variable (y)', color: '#94a3b8' }, 
+                grid: { color: '#334155' }, 
+                ticks: { color: '#f8fafc', stepSize: 10 } 
+              }
             },
             plugins: {
               legend: { display: false }
@@ -410,7 +464,6 @@
       }
     }
 
-    // Eventos para controles deslizantes y cambio de criterios
     document.getElementById("rectCount").addEventListener("input", updateSimulation);
     document.getElementById("criterion").addEventListener("change", updateSimulation);
 
