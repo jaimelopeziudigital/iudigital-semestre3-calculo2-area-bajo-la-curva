@@ -1,148 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GrÃ¡fico de Carga de BaterÃ­a</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: #f4f7f6;
-      margin: 0;
-      padding: 20px;
-    }
-    .card {
-      background: white;
-      padding: 20px 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-    h2 {
-      color: #333;
-      margin-bottom: 20px;
-    }
-    canvas {
-      background-color: #fff;
-      border-radius: 8px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Carga Celular - Área Bajo la Curva</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+ body{font-family: Arial; background:#f8f9fc; padding:20px}
+ .card{background:white; padding:20px; border-radius:12px; max-width:900px; margin:auto; box-shadow:0 4px 10px #0001}
+ .azul{color:#2563eb; font-weight:bold} .verde{color:#16a34a; font-weight:bold}
+</style>
 </head>
 <body>
-
-  <div class="card">
-    <h2>Nivel de BaterÃ­a (10:00 AM - 12:00 PM)</h2>
-    <canvas id="batteryChart" width="650" height="400"></canvas>
-  </div>
-
-  <script>
-    const canvas = document.getElementById('batteryChart');
-    const ctx = canvas.getContext('2d');
-
-    // Datos: Hora y porcentaje de carga (0 a 100)
-    const data = [
-      { time: '10:00 AM', percentage: 20 },
-      { time: '10:30 AM', percentage: 45 },
-      { time: '11:00 AM', percentage: 70 },
-      { time: '11:30 AM', percentage: 88 },
-      { time: '12:00 PM', percentage: 100 }
-    ];
-
-    // MÃ¡rgenes y dimensiones del grÃ¡fico
-    const padding = 60;
-    const chartWidth = canvas.width - padding * 2;
-    const chartHeight = canvas.height - padding * 2;
-
-    // Dibujar Ejes
-    ctx.beginPath();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#333';
-
-    // Eje Y
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, canvas.height - padding);
-
-    // Eje X
-    ctx.lineTo(canvas.width - padding, canvas.height - padding);
-    ctx.stroke();
-
-    // Dibujar Marcas y Etiquetas del Eje Y (Porcentaje de 0% a 100%)
-    ctx.fillStyle = '#555';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'right';
-
-    for (let i = 0; i <= 100; i += 20) {
-      const y = canvas.height - padding - (i / 100) * chartHeight;
-      ctx.fillText(i + '%', padding - 10, y + 4);
-      
-      // LÃ­neas de guÃ­a horizontales
-      ctx.beginPath();
-      ctx.strokeStyle = '#e0e0e0';
-      ctx.lineWidth = 1;
-      ctx.moveTo(padding, y);
-      ctx.lineTo(canvas.width - padding, y);
-      ctx.stroke();
-    }
-
-    // TÃ­tulo Eje Y
-    ctx.save();
-    ctx.translate(20, canvas.height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.textAlign = 'center';
-    ctx.font = 'bold 13px Arial';
-    ctx.fillStyle = '#333';
-    ctx.fillText('Porcentaje de Carga (%)', 0, 0);
-    ctx.restore();
-
-    // TÃ­tulo Eje X
-    ctx.textAlign = 'center';
-    ctx.font = 'bold 13px Arial';
-    ctx.fillStyle = '#333';
-    ctx.fillText('Tiempo (Horas)', canvas.width / 2, canvas.height - 15);
-
-    // Dibujar Barras / RectÃ¡ngulos y Etiquetas del Eje X
-    const barWidth = 45;
-    const totalBars = data.length;
-    const stepX = chartWidth / totalBars;
-
-    data.forEach((item, index) => {
-      const x = padding + (index * stepX) + (stepX / 2) - (barWidth / 2);
-      const barHeight = (item.percentage / 100) * chartHeight;
-      const y = canvas.height - padding - barHeight;
-
-      // Color dinÃ¡mico segÃºn el porcentaje
-      let barColor = '#f44336'; // Rojo si es bajo (< 30%)
-      if (item.percentage >= 30 && item.percentage < 70) {
-        barColor = '#ff9800'; // Naranja (medio)
-      } else if (item.percentage >= 70) {
-        barColor = '#4caf50'; // Verde (alto)
-      }
-
-      // Dibujar RectÃ¡ngulo con color
-      ctx.fillStyle = barColor;
-      ctx.fillRect(x, y, barWidth, barHeight);
-
-      // Borde del rectÃ¡ngulo
-      ctx.strokeStyle = '#333';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x, y, barWidth, barHeight);
-
-      // Texto de Porcentaje sobre la barra
-      ctx.fillStyle = '#000';
-      ctx.font = 'bold 12px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText(item.percentage + '%', x + barWidth / 2, y - 8);
-
-      // Etiquetas Eje X (Horas)
-      ctx.fillStyle = '#555';
-      ctx.font = '12px Arial';
-      ctx.fillText(item.time, x + barWidth / 2, canvas.height - padding + 20);
-    });
-  </script>
-
+<div class="card">
+<h2>CARGA DEL CELULAR - Área bajo la curva</h2>
+<p>14h totales / 2 rectángulos = <b>7h de base</b> c/u</p>
+<canvas id="grafica"></canvas>
+<h3>Cálculo:</h3>
+<p><span class="azul">Rectángulo Azul:</span> A = b x h = 7 x 100 = 700 %·h</p>
+<p><span class="verde">Rectángulo Verde:</span> A = b x h = 7 x 65 = 455 %·h</p>
+<p><b>Área Total: 700 + 455 = 1155 %·h = 11.5 horas equivalentes al 100%</b></p>
+</div>
+<script>
+const ctx = document.getElementById('grafica');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['10AM','12M','2PM','4PM','6PM','8PM','10PM','12AM'],
+    datasets: [
+      { label: '% Carga', data: [100,87,85,82,70,65,50,39], borderColor:'black', tension:0.2, pointRadius:5 },
+      { label: 'Rect Azul 100%', data: [100,100,100,100,null,null,null,null], backgroundColor:'rgba(37,99,235,0.4)', fill:true, stepped:true },
+      { label: 'Rect Verde 65%', data: [null,null,null,null,65,65,65,65], backgroundColor:'rgba(22,163,74,0.4)', fill:true, stepped:true }
+    ]
+  },
+  options:{ scales:{ y:{ min:0, max:100, title:{display:true, text:'% Carga'}}}}
+});
+</script>
 </body>
 </html>
